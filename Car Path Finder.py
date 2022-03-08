@@ -50,10 +50,6 @@ def heuristic(city1, city2):
 
     min_distance = city1.distance[city2.index]
         
-    #since the heuristic function has random elements I can't call it directly during the loop or else it will sometimes give a different heuristic value for one city
-    #which allows for the city to be chosen twice in a row sometimes, so to solve this I seed using the index of the city getting the heuristic, this lets me call the function during the loop
-    #this could also be fixed by running all the heuristics once before the loop then referencing them
-    #random.seed(city1.index)
     return (min_distance - random.randint(5, 10))
 
 #Here is our parent function that will drive whichever algorithm is chosen to find the optimal path between cities.
