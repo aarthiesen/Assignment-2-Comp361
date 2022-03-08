@@ -24,10 +24,6 @@ class Route:
         self.total_distance = total_distance
         self.path = path
 
-
-
-
-
 #initialize all the cities as city classes with stored data on their distance to one another
 #the order of the lists is the same order their distance to one another ie: VA.distance[1] = the distance between VA and NV and BU.distance[0] = the distance between BU and VA
 #the units are all in km and are rounded to nearest integer
@@ -44,7 +40,10 @@ AB = City(9, [67, 70, 79, 57, 75, 44, 51, 62, 29, 0, 35, 87, 18], "Abbotsford")
 CH = City(10, [99, 103, 112, 90, 106, 77, 84, 98, 64, 35, 0, 52, 49], "Chilliwack")
 HO = City(11, [150, 153, 162, 140, 156, 127, 134, 148, 114, 87, 52, 0, 81], "Hope")
 MI = City(12, [71, 74, 83, 61, 84, 54, 60, 80, 38, 18, 49, 81, 0], "Mission")
-  
+
+#locations is used to tell if user input is valid 
+locations = ["VA", "NV", "WV", "BU", "RI", "SU", "NW", "DE", "LA", "AB", "CH", "HO", "MI"]
+
 
 #create a function that will give us a heuristic value on two cities
 def heuristic(city1, city2):
@@ -65,9 +64,12 @@ def PathFinder(start, finish, algorithm):
     
     #print the returned path from whichever algorithm was chosen
     print("The optimal path from %s to %s is:" %(start.name, finish.name))
+    
     for i in range(len(result.path)):
         print(result.path[i])
-    print("With a total distance of %d" %(result.total_distance))
+    
+    print("With a total distance of %s km" %(result.total_distance))
+    print(result.total_distance)
 
 
 
@@ -87,19 +89,24 @@ def A_star(start, finish):
     #result is a class variable used to track the data we want to return
     result = Route(0, [])
     
+    #add the starting point to the results path
+    result.path.append(start.name)
+    
     #lowesth is a variable used to track what the next current node will be based on the lowest heuristic
     lowesth = None
     
+    
+    #THIS IS TEST CODE FOR IF YOU WANT TO ELIMINATE DIRECT ROUTES
+    #This will set the  direct distance between the start and finish nodes arbitrarily high as to make the code find a non-direct route through other cities
+    #finish.distance[start.index] = 999
+    
+    
     #only exit the loop once we have located the goal
-    while (current != finish):
-        
-        #remove the current city from the list --- thanks to https://stackoverflow.com/questions/9140857/oop-python-removing-class-instance-from-a-list for this code
-        for i, o in enumerate(cities):
-            if o.index == current.index:
-                del cities[i]
-                break
+    while (current.index != finish.index):
         
         for i in range(len(cities)):
+            
+
             
             #if the iterated city node has not had their cost calculated or if it is larger than the current
             if (cities[i].cost == None or cities[i].cost > current.cost + cities[i].distance[current.index]):
@@ -107,24 +114,60 @@ def A_star(start, finish):
                 #then update the costs based on current cost + cost to travel from current
                 cities[i].cost = current.cost + cities[i].distance[current.index]
                 
-                #update the heuristic aswell
-                cities[i].heuristic = cities[i].cost + heuristic(cities[i], finish)
-                
-                #update what the node with the lowest heuristic is if necessary
-                if (lowesth == None or cities[i].heuristic < lowesth.heuristic):
-                    lowesth = cities[i]
-                    
-                    
+            #update the heuristic for each city node
+            cities[i].heuristic = cities[i].cost + heuristic(cities[i], finish)
+
+
+        
+        
+        #remove the current city from the list --- thanks to https://stackoverflow.com/questions/9140857/oop-python-removing-class-instance-from-a-list for this code
+        for i in range(len(cities)):
+            if cities[i].index == current.index:
+                del cities[i]
+                break
+
+        #choose the next current node based on their lowest heuristic value 
+        #this is where some of the randomness in our heuristic function can lead to the algorithm not choosing the best path,
+        #sometimes the randomized heuristic is chosen for a non-optimal path
+        for i in range(len(cities)):      
+            if (lowesth == None or cities[i].heuristic < lowesth.heuristic):
+                lowesth = cities[i]
+
+        current = lowesth
+
         #store the current node in our path and update the total distance
         result.path.append(current.name)
-        result.total_distance = result.total_distance + current.cost
+        result.total_distance = current.cost
         
-        #choose the next current node
-        current = lowesth
-    
-    #append the final destination to the path in result then return result
-    result.path.append(finish.name)
     return result
-    
 
-PathFinder(VA, HO, "A_star")
+validinput = False
+while (validinput != True):
+
+    print("Please choose a STARTING location from the list below:")
+    startinput = input("VA, NV, WV, BU, RI, SU, NW, DE, LA, AB, CH, HO, MI\n")
+
+    if locations.count(startinput) > 0:
+        validinput = True
+
+
+validinput = False
+while (validinput != True):
+
+    print("Please choose an ENDING location from the list below:")
+    destinationinput = input("VA, NV, WV, BU, RI, SU, NW, DE, LA, AB, CH, HO, MI\n")
+    
+    if locations.count(destinationinput) > 0:
+        validinput = True    
+
+validinput = False
+while (validinput != True):
+
+    print("Please choose an Algorithm:")
+    algorithm = input("A_Star\n")
+    
+    if algorithm == 'A_Star' or algorithm == 'a_star' or algorithm == 'A_star' or algorithm == 'A*':
+        validinput = True    
+
+
+PathFinder(eval(startinput), eval(destinationinput), algorithm)
