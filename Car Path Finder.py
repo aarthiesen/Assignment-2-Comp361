@@ -49,8 +49,11 @@ locations = ["VA", "NV", "WV", "BU", "RI", "SU", "NW", "DE", "LA", "AB", "CH", "
 def heuristic(city1, city2):
 
     min_distance = city1.distance[city2.index]
-    
-    random.seed()
+        
+    #since the heuristic function has random elements I can't call it directly during the loop or else it will sometimes give a different heuristic value for one city
+    #which allows for the city to be chosen twice in a row sometimes, so to solve this I seed using the index of the city getting the heuristic, this lets me call the function during the loop
+    #this could also be fixed by running all the heuristics once before the loop then referencing them
+    #random.seed(city1.index)
     return (min_distance - random.randint(5, 10))
 
 #Here is our parent function that will drive whichever algorithm is chosen to find the optimal path between cities.
@@ -99,14 +102,19 @@ def A_star(start, finish):
     #THIS IS TEST CODE FOR IF YOU WANT TO ELIMINATE DIRECT ROUTES
     #This will set the  direct distance between the start and finish nodes arbitrarily high as to make the code find a non-direct route through other cities
     #finish.distance[start.index] = 999
+
     
     
     #only exit the loop once we have located the goal
     while (current.index != finish.index):
         
+        #remove the current city from the list --- thanks to https://stackoverflow.com/questions/9140857/oop-python-removing-class-instance-from-a-list for this code
         for i in range(len(cities)):
-            
+            if cities[i].index == current.index:
+                del cities[i]
+                break
 
+        for i in range(len(cities)):
             
             #if the iterated city node has not had their cost calculated or if it is larger than the current
             if (cities[i].cost == None or cities[i].cost > current.cost + cities[i].distance[current.index]):
@@ -120,24 +128,21 @@ def A_star(start, finish):
 
         
         
-        #remove the current city from the list --- thanks to https://stackoverflow.com/questions/9140857/oop-python-removing-class-instance-from-a-list for this code
-        for i in range(len(cities)):
-            if cities[i].index == current.index:
-                del cities[i]
-                break
 
         #choose the next current node based on their lowest heuristic value 
         #this is where some of the randomness in our heuristic function can lead to the algorithm not choosing the best path,
         #sometimes the randomized heuristic is chosen for a non-optimal path
         for i in range(len(cities)):      
-            if (lowesth == None or cities[i].heuristic < lowesth.heuristic):
+            if (lowesth == None or cities[i].heuristic < lowesth.heuristic or lowesth == current):
                 lowesth = cities[i]
-
+        
+        #swap the current over, first saving it as a parent to easily calculate total distance
+        parent = current
         current = lowesth
 
         #store the current node in our path and update the total distance
         result.path.append(current.name)
-        result.total_distance = current.cost
+        result.total_distance = result.total_distance + current.distance[parent.index]
         
     return result
 
