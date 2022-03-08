@@ -5,37 +5,46 @@
 import random
 
 
-#make a class to hold the data each city needs
+#make a class to hold the data each city needs including values for heuristics and cost which are only used during the algorithms
 class City:
 
-    def __init__(self, index, distance):
+    def __init__(self, index, distance, name, heuristic = None, cost = None):
     
         self.index = index
         self.distance = distance
+        self.name = name
+        self.heuristic = heuristic
+        self.cost = cost
+
+#make a class to return from the algorithm to have more organized data
+class Route:
+
+   def __init__(self, total_distance, path):
+    
+        self.total_distance = total_distance
+        self.path = path
+
+
+
 
 
 #initialize all the cities as city classes with stored data on their distance to one another
 #the order of the lists is the same order their distance to one another ie: VA.distance[1] = the distance between VA and NV and BU.distance[0] = the distance between BU and VA
 #the units are all in km and are rounded to nearest integer
-VA = City(0, [0, 18, 11, 13, 13, 28, 18, 24, 45, 67, 99, 150, 71])
-NV = City(1, [18, 0, 10, 15, 29, 31, 27, 36, 48, 70, 103, 153, 74])
-WV = City(2, [11, 10, 0, 25, 24, 42, 30, 35, 57, 79, 112, 162, 83])
-BU = City(3, [13, 15, 25, 0, 22, 14, 7, 29, 35, 57, 90, 140, 61])
-RI = City(4, [13, 29, 24, 22, 0, 29, 22, 16, 44, 75, 106, 156, 84])
-SU = City(5, [28, 31, 42, 14, 29, 0, 7, 26, 20, 44, 77, 127, 54])
-NW = City(6, [18, 27, 30, 7, 22, 7, 0, 29, 29, 51, 84, 134, 60])
-DE = City(7, [24, 36, 35, 29, 16, 26, 29, 0, 33, 62, 98, 148, 80])
-LA = City(8, [45, 48, 57, 35, 44, 20, 29, 33, 0, 29, 64, 114, 38])
-AB = City(9, [67, 70, 79, 57, 75, 44, 51, 62, 29, 0, 35, 87, 18])
-CH = City(10, [99, 103, 112, 90, 106, 77, 84, 98, 64, 35, 0, 52, 49])
-HO = City(11, [150, 153, 162, 140, 156, 127, 134, 148, 114, 87, 52, 0, 81])
-MI = City(12, [71, 74, 83, 61, 84, 54, 60, 80, 38, 18, 49, 81, 0])
-    
-#Here is our working list of cities for our graph
-cities = [VA, NV, WV, BU, RI, SU, NW, DE, LA, AB, CH, HO, MI]
-
-
-
+VA = City(0, [0, 18, 11, 13, 13, 28, 18, 24, 45, 67, 99, 150, 71], "Vancouver")
+NV = City(1, [18, 0, 10, 15, 29, 31, 27, 36, 48, 70, 103, 153, 74], "North Vancouver")
+WV = City(2, [11, 10, 0, 25, 24, 42, 30, 35, 57, 79, 112, 162, 83], "West Vancouver")
+BU = City(3, [13, 15, 25, 0, 22, 14, 7, 29, 35, 57, 90, 140, 61], "Burnaby")
+RI = City(4, [13, 29, 24, 22, 0, 29, 22, 16, 44, 75, 106, 156, 84], "Richmond")
+SU = City(5, [28, 31, 42, 14, 29, 0, 7, 26, 20, 44, 77, 127, 54], "Surrey")
+NW = City(6, [18, 27, 30, 7, 22, 7, 0, 29, 29, 51, 84, 134, 60], "New Westminster")
+DE = City(7, [24, 36, 35, 29, 16, 26, 29, 0, 33, 62, 98, 148, 80], "Delta")
+LA = City(8, [45, 48, 57, 35, 44, 20, 29, 33, 0, 29, 64, 114, 38], "Langley")
+AB = City(9, [67, 70, 79, 57, 75, 44, 51, 62, 29, 0, 35, 87, 18], "Abbotsford")
+CH = City(10, [99, 103, 112, 90, 106, 77, 84, 98, 64, 35, 0, 52, 49], "Chilliwack")
+HO = City(11, [150, 153, 162, 140, 156, 127, 134, 148, 114, 87, 52, 0, 81], "Hope")
+MI = City(12, [71, 74, 83, 61, 84, 54, 60, 80, 38, 18, 49, 81, 0], "Mission")
+  
 
 #create a function that will give us a heuristic value on two cities
 def heuristic(city1, city2):
@@ -43,12 +52,79 @@ def heuristic(city1, city2):
     min_distance = city1.distance[city2.index]
     
     random.seed()
-    return (min_distance - randint(5, 10))
+    return (min_distance - random.randint(5, 10))
 
+#Here is our parent function that will drive whichever algorithm is chosen to find the optimal path between cities.
 def PathFinder(start, finish, algorithm):
 
+    if algorithm == 'A_Star' or algorithm == 'a_star' or algorithm == 'A_star' or algorithm == 'A*':
+        result = A_star(start, finish)
+    
+    else:
+        print("UNDEFINED ALGORITHM CHOSEN!")
+    
+    #print the returned path from whichever algorithm was chosen
+    print("The optimal path from %s to %s is:" %(start.name, finish.name))
+    for i in range(len(result.path)):
+        print(result.path[i])
+    print("With a total distance of %d" %(result.total_distance))
 
 
 
+def A_star(start, finish):
 
+    #Here is our working list of cities for our graph
+    cities = [VA, NV, WV, BU, RI, SU, NW, DE, LA, AB, CH, HO, MI]
+    
 
+    #set the heuristic of the goal to zero and the cost of start to zero
+    cities[finish.index].heuristic = 0
+    start.cost = 0
+    
+    #make our starting node the starting city
+    current = start
+    
+    #result is a class variable used to track the data we want to return
+    result = Route(0, [])
+    
+    #lowesth is a variable used to track what the next current node will be based on the lowest heuristic
+    lowesth = None
+    
+    #only exit the loop once we have located the goal
+    while (current != finish):
+        
+        #remove the current city from the list --- thanks to https://stackoverflow.com/questions/9140857/oop-python-removing-class-instance-from-a-list for this code
+        for i, o in enumerate(cities):
+            if o.index == current.index:
+                del cities[i]
+                break
+        
+        for i in range(len(cities)):
+            
+            #if the iterated city node has not had their cost calculated or if it is larger than the current
+            if (cities[i].cost == None or cities[i].cost > current.cost + cities[i].distance[current.index]):
+                
+                #then update the costs based on current cost + cost to travel from current
+                cities[i].cost = current.cost + cities[i].distance[current.index]
+                
+                #update the heuristic aswell
+                cities[i].heuristic = cities[i].cost + heuristic(cities[i], finish)
+                
+                #update what the node with the lowest heuristic is if necessary
+                if (lowesth == None or cities[i].heuristic < lowesth.heuristic):
+                    lowesth = cities[i]
+                    
+                    
+        #store the current node in our path and update the total distance
+        result.path.append(current.name)
+        result.total_distance = result.total_distance + current.cost
+        
+        #choose the next current node
+        current = lowesth
+    
+    #append the final destination to the path in result then return result
+    result.path.append(finish.name)
+    return result
+    
+
+PathFinder(VA, HO, "A_star")
